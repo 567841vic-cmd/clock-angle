@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>時鐘角度教具</title>
+<style>
+:root{--bg:#fbf7ee;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--cw:#2563eb;--ccw:#ea580c;--start:#16a34a;--end:#dc2626;--accent:#7c3aed;--soft:#f5f3ff}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:18px;line-height:1.6}
+header{padding:20px 16px 4px;text-align:center}
+h1{margin:0;font-size:clamp(1.4rem,3vw,2rem)}
+header p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 16px}
+.tab{border:2px solid var(--accent);background:#fff;color:var(--accent);padding:8px 18px;border-radius:999px;font:inherit;font-weight:700;cursor:pointer}
+.tab.on{background:var(--accent);color:#fff}
+main{max-width:1120px;margin:0 auto;padding:0 16px 40px}
+.panel{display:none;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.panel.on{display:grid}
+@media(max-width:820px){.panel{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.06);min-width:0}
+svg.clock{width:100%;max-width:460px;display:block;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+h2{font-size:1.2rem;margin:0 0 10px}
+.big{font-size:clamp(2rem,6vw,3rem);font-weight:800;text-align:center;letter-spacing:2px;margin:6px 0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+button.b{font:inherit;font-size:1rem;padding:8px 14px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:var(--ink);cursor:pointer}
+button.b:hover{background:#f1f5f9}
+button.b:disabled{opacity:.4;cursor:not-allowed}
+button.p{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+button.p:hover{background:#6d28d9}
+label.f{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+input[type=number],select{font:inherit;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;width:5.5em;background:#fff;color:var(--ink)}
+select{width:auto}
+.hint{background:var(--soft);border-radius:12px;padding:10px 14px;margin-top:10px;font-size:1rem}
+.legend span{display:inline-flex;align-items:center;gap:6px;margin-right:12px;font-size:.95rem}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.bar{width:22px;height:5px;border-radius:3px;display:inline-block}
+.steps .s{border-left:5px solid var(--accent);padding:6px 12px;margin:8px 0;background:#fafafa;border-radius:0 10px 10px 0}
+.formula{font-weight:800;font-size:1.12rem;white-space:nowrap}
+.cw{color:var(--cw);font-weight:700}.ccw{color:var(--ccw);font-weight:700}
+.ok{color:#16a34a;font-weight:800}.no{color:#dc2626;font-weight:800}
+.q{margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.q .row{margin:4px 0 0}
+.problem{font-size:1.12rem;font-weight:700;background:#fff7ed;border-radius:12px;padding:12px 14px;margin-top:10px}
+.score{float:right;color:var(--muted);font-size:.95rem;font-weight:400}
+.live{font-size:1.1rem;text-align:center;margin-top:6px;min-height:1.6em;font-weight:700}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>🕒 時鐘與角度教具</h1>
+  <p>國小四年級｜看時鐘・順時鐘與逆時鐘旋轉的角度</p>
+</header>
+<nav class="tabs">
+  <button class="tab on" data-t="p1">① 認識時鐘</button>
+  <button class="tab" data-t="p2">② 旋轉角度示範</button>
+  <button class="tab" data-t="p3">③ 角度練習題</button>
+</nav>
+<main>
+
+<!-- ① 認識時鐘 -->
+<section class="panel on" id="p1">
+  <div class="card">
+    <svg class="clock" id="c1"></svg>
+    <div class="row" style="justify-content:center"><label class="f"><input type="checkbox" id="showMin"> 顯示外圈分鐘數（0、5、10…）</label></div>
+  </div>
+  <div class="card">
+    <h2>現在是幾時幾分？</h2>
+    <div class="big" id="timeTxt"></div>
+    <p style="margin:0;color:var(--muted);font-size:.95rem">在時鐘上拖曳<b>長針（分針）</b>，短針（時針）會跟著慢慢走。</p>
+    <div class="row"><b>分針：</b>
+      <button class="b adj" data-m="-5">−5 分</button><button class="b adj" data-m="-1">−1 分</button>
+      <button class="b adj" data-m="1">+1 分</button><button class="b adj" data-m="5">+5 分</button></div>
+    <div class="row"><b>時針：</b>
+      <button class="b adj" data-m="-60">−1 小時</button><button class="b adj" data-m="60">+1 小時</button></div>
+    <div class="hint" id="readHint"></div>
+
+    <h2 style="margin-top:18px">📝 小測驗</h2>
+    <div class="row">
+      <select id="qType"><option value="5">整 5 分</option><option value="1">任意分鐘</option></select>
+      <button class="b p" id="qNew">出一題</button>
+    </div>
+    <div id="qBox" class="hidden">
+      <div class="row">
+        <input type="number" id="qH" min="1" max="12" inputmode="numeric"> 時
+        <input type="number" id="qM" min="0" max="59" inputmode="numeric"> 分
+        <button class="b p" id="qCheck">對答案</button><button class="b" id="qShow">看答案</button>
+      </div>
+      <div id="qRes" style="min-height:1.6em;font-weight:700"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ② 旋轉角度示範 -->
+<section class="panel" id="p2">
+  <div class="card">
+    <svg class="clock" id="c2"></svg>
+    <div class="legend row" style="justify-content:center">
+      <span><i class="dot" style="background:var(--start)"></i>起點</span>
+      <span><i class="dot" style="background:var(--end)"></i>終點</span>
+      <span><i class="bar" style="background:var(--cw)"></i>順時鐘</span>
+      <span><i class="bar" style="background:var(--ccw)"></i>逆時鐘</span>
+    </div>
+    <div class="live" id="live2"></div>
+  </div>
+  <div class="card">
+    <h2>設定題目</h2>
+    <div class="row">
+      <label class="f">指針 <select id="d_hand"><option value="h">時針（短針）</option><option value="m">分針（長針）</option></select></label>
+      <label class="f">刻度 <select id="d_unit"><option value="30">大刻度（一圈 12 格）</option><option value="6">小刻度（一圈 60 格）</option></select></label>
+    </div>
+    <div class="row"><label class="f">起點在數字 <select id="d_start"></select></label></div>
+    <div class="row"><label class="f"><span class="cw">先順時鐘</span>走 <input type="number" id="d_cw" value="6" min="0" max="60" inputmode="numeric"> 格</label></div>
+    <div class="row"><label class="f"><span class="ccw">再逆時鐘</span>走 <input type="number" id="d_ccw" value="3" min="0" max="60" inputmode="numeric"> 格</label></div>
+    <div class="row">
+      <button class="b p" id="d_play">▶ 播放動畫</button>
+      <button class="b" id="d_reset">重設</button>
+      <button class="b" id="d_ans">顯示答案</button>
+    </div>
+    <div class="problem" id="d_text"></div>
+    <div class="steps hidden" id="d_steps"></div>
+  </div>
+</section>
+
+<!-- ③ 練習題 -->
+<section class="panel" id="p3">
+  <div class="card">
+    <svg class="clock" id="c3"></svg>
+    <div class="legend row" style="justify-content:center">
+      <span><i class="dot" style="background:var(--start)"></i>起點</span>
+      <span><i class="dot" style="background:var(--end)"></i>終點</span>
+      <span><i class="bar" style="background:var(--cw)"></i>順時鐘</span>
+      <span><i class="bar" style="background:var(--ccw)"></i>逆時鐘</span>
+    </div>
+    <div class="live" id="live3"></div>
+  </div>
+  <div class="card">
+    <h2>角度練習題 <span class="score" id="score">答對 0 題／共 0 題</span></h2>
+    <div class="row">
+      <select id="lv"><option value="1">基礎</option><option value="2">進階</option><option value="3">挑戰（分針・小刻度）</option></select>
+      <button class="b p" id="pNew">新題目</button>
+    </div>
+    <div class="problem" id="pText"></div>
+    <div class="q">1. 總共移動了幾度？<div class="row"><input type="number" id="a1" inputmode="numeric"> 度 <span id="r1"></span></div></div>
+    <div class="q">2. 起始位置與最後位置的夾角是幾度？<div class="row"><input type="number" id="a2" inputmode="numeric"> 度 <span id="r2"></span></div></div>
+    <div class="q" id="q3">3. 最後停在數字幾？<div class="row"><input type="number" id="a3" inputmode="numeric"> <span id="r3"></span></div></div>
+    <div class="row">
+      <button class="b p" id="pCheck">檢查答案</button>
+      <button class="b" id="pPlay">▶ 看動畫</button>
+      <button class="b" id="pSol">看詳解</button>
+    </div>
+    <div class="steps hidden" id="pSteps"></div>
+  </div>
+</section>
+</main>
+
+<script>
+const NS='http://www.w3.org/2000/svg', $=id=>document.getElementById(id);
+const COL={cw:'#2563eb',ccw:'#ea580c',start:'#16a34a',end:'#dc2626'};
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function pt(d,r){const a=d*Math.PI/180;return[150+r*Math.sin(a),150-r*Math.cos(a)]}
+
+/* ---------- 時鐘元件 ---------- */
+function makeClock(svg){
+  svg.setAttribute('viewBox','-24 -24 348 348');
+  const uid=Math.random().toString(36).slice(2,8);
+  const defs=el('defs',{},svg);
+  ['cw','ccw'].forEach(k=>{
+    const m=el('marker',{id:k+uid,viewBox:'0 0 10 10',refX:6,refY:5,markerWidth:3.2,markerHeight:3.2,orient:'auto'},defs);
+    el('path',{d:'M0,0L10,5L0,10z',fill:COL[k]},m);
+  });
+  el('circle',{cx:150,cy:150,r:142,fill:'#fff',stroke:'#334155','stroke-width':6},svg);
+  for(let i=0;i<60;i++){
+    const big=i%5===0,[x1,y1]=pt(i*6,136),[x2,y2]=pt(i*6,big?121:129);
+    el('line',{x1,y1,x2,y2,stroke:'#334155','stroke-width':big?4:1.6,'stroke-linecap':'round'},svg);
+  }
+  for(let n=1;n<=12;n++){
+    const[x,y]=pt(n*30,104);
+    el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':24,'font-weight':800,fill:'#1f2937'},svg).textContent=n;
+  }
+  const outer=el('g',{visibility:'hidden'},svg);
+  for(let i=0;i<60;i+=5){
+    const[x,y]=pt(i*6,160);
+    el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':13,'font-weight':700,fill:'#7c3aed'},outer).textContent=i;
+  }
+  const arcs=el('g',{},svg), marks=el('g',{},svg);
+  const mk=(len,w,c)=>{
+    const l=el('line',{x1:150,y1:150,x2:150,y2:150-len,stroke:c,'stroke-width':w,'stroke-linecap':'round'},svg);
+    return{set(d){const[x,y]=pt(d,len);l.setAttribute('x2',x);l.setAttribute('y2',y)},show(v){l.style.display=v?'':'none'}};
+  };
+  const hour=mk(66,9,'#1f2937'), minute=mk(112,5,'#7c3aed');
+  el('circle',{cx:150,cy:150,r:8,fill:'#1f2937'},svg);
+  return{svg,uid,arcs,marks,outer,hour,minute,anim:0,timers:[]};
+}
+function arcD(from,dir,span,r){
+  let s='';const n=Math.max(1,Math.ceil(span/2));
+  for(let i=0;i<=n;i++){const t=span*i/n,rr=r-12*t/360,[x,y]=pt(from+dir*t,rr);s+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1)}
+  return s;
+}
+function mark(c,deg,txt,color){
+  const[x,y]=pt(deg,152);
+  el('circle',{cx:x,cy:y,r:12,fill:color},c.marks);
+  el('text',{x,y,'text-anchor':'middle','dominant-baseline':'central','font-size':13,'font-weight':800,fill:'#fff'},c.marks).textContent=txt;
+}
+function stop(c){cancelAnimationFrame(c.anim);c.timers.forEach(clearTimeout);c.timers=[]}
+function resetClock(c,hand,start){
+  stop(c);c.arcs.innerHTML='';c.marks.innerHTML='';
+  hand.set(start);mark(c,start,'起',COL.start);
+}
+function rotate(c,hand,start,phases,onProg,onDone){
+  resetClock(c,hand,start);
+  let i=0,from=start,path=null,t0=0,moved=0;
+  const next=()=>{
+    while(i<phases.length&&phases[i].span===0)i++;
+    if(i>=phases.length){finish();return}
+    const p=phases[i];
+    path=el('path',{d:'',fill:'none',stroke:COL[p.k],'stroke-width':5,'stroke-linecap':'round','marker-end':`url(#${p.k}${c.uid})`},c.arcs);
+    t0=0;c.anim=requestAnimationFrame(step);
+  };
+  const step=ts=>{
+    const p=phases[i];if(!t0)t0=ts;
+    const dur=Math.max(700,p.span/120*1000), k=Math.min(1,(ts-t0)/dur), t=p.span*k;
+    hand.set(from+p.dir*t);path.setAttribute('d',arcD(from,p.dir,t,p.r));
+    onProg&&onProg(moved+t,p.k);
+    if(k<1)c.anim=requestAnimationFrame(step);
+    else{moved+=p.span;from+=p.dir*p.span;i++;c.timers.push(setTimeout(next,500))}
+  };
+  const finish=()=>{
+    const n=d=>((d%360)+360)%360, s=n(start), e=n(from);
+    c.marks.innerHTML='';
+    if(Math.abs(s-e)<0.01){mark(c,s-8,'起',COL.start);mark(c,s+8,'終',COL.end)}
+    else{mark(c,s,'起',COL.start);mark(c,e,'終',COL.end)}
+    onDone&&onDone();
+  };
+  next();
+}
+
+/* ---------- 計算與詳解 ---------- */
+function solve(N,M,u,s){
+  const cnt=360/u, total=(N+M)*u, raw=Math.abs(N-M)*u, m=raw%360, ang=m>180?360-m:m;
+  const sMin=(s%12)*5, eMin=(((sMin+(N-M)*(u===30?5:1))%60)+60)%60;
+  const k=Math.floor(eMin/5)||12;
+  const endNum=eMin%5===0?k:null;
+  const endLabel=eMin%5===0?`數字 ${k}`:`數字 ${k} 再過 ${eMin%5} 個小刻度的位置`;
+  return{cnt,total,raw,m,ang,endNum,endLabel};
+}
+function stepsHTML(N,M,u,o){
+  const un=u===30?'大刻度':'小刻度';
+  let h=`<div class="s">① 一圈是 360 度，共有 ${o.cnt} 個${un}，每一格是<br><span class="formula">360 ÷ ${o.cnt} = ${u} 度</span></div>`;
+  h+=`<div class="s">② <b>總共移動了幾度</b>：<span class="cw">順時鐘</span>和<span class="ccw">逆時鐘</span>都是真的走過的路，要<b>相加</b>。<br><span class="formula">(${N} + ${M}) × ${u} = ${o.total} 度</span></div>`;
+  let t;
+  if(N===M){t=`順、逆時鐘走的格數一樣，回到原來的位置，<span class="formula">夾角 = 0 度</span>`}
+  else{
+    const a=Math.max(N,M),b=Math.min(N,M);
+    t=`方向相反會互相抵消，要<b>相減</b>（${N>M?'<span class="cw">順時鐘</span>':'<span class="ccw">逆時鐘</span>'}走得比較多）：<br><span class="formula">(${a} − ${b}) × ${u} = ${o.raw} 度</span>`;
+    if(o.raw>=360)t+=`<br>超過一整圈，去掉整圈：${o.raw} − ${360*Math.floor(o.raw/360)} = ${o.m} 度`;
+    if(o.m===0)t+=`<br>剛好轉整圈回到原處，所以夾角是 <span class="formula">0 度</span>`;
+    else if(o.m>180)t+=`<br>超過 180 度，夾角要看<b>比較小的那一邊</b>：<span class="formula">360 − ${o.m} = ${o.ang} 度</span>`;
+    else t+=`<br>所以夾角是 <span class="formula">${o.ang} 度</span>`;
+  }
+  h+=`<div class="s">③ <b>起始位置與最後位置的夾角</b>：${t}</div>`;
+  h+=`<div class="s">④ 最後停在<b>${o.endLabel}</b>。</div>`;
+  return h;
+}
+function probText(hn,s,N,M,u){
+  const un=u===30?'大刻度':'小刻度';
+  return `${hn}從數字 <b>${s}</b> 開始，先<span class="cw">順時鐘</span>走了 <b>${N}</b> 個${un}，接著<span class="ccw">逆時鐘</span>走了 <b>${M}</b> 個${un}。`;
+}
+const liveTxt=(d,k)=>`<span class="${k}">${k==='cw'?'順時鐘轉動中…':'逆時鐘轉動中…'}</span>　已移動 ${Math.round(d)} 度`;
+
+/* ---------- 分頁 ---------- */
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));
+});
+
+/* ---------- ① 認識時鐘 ---------- */
+const c1=makeClock($('c1'));
+let total=180, quiz=false, ans=null, drag=false;
+function render1(){
+  c1.minute.set((total%60)*6);c1.hour.set((total%720)/2);
+  const h=Math.floor(total/60)%12||12, m=total%60;
+  if(quiz){$('timeTxt').textContent='？ 時 ？ 分';$('readHint').classList.add('hidden');return}
+  $('readHint').classList.remove('hidden');
+  $('timeTxt').textContent=`${h} 時 ${m} 分`;
+  const k=Math.floor(m/5), r=m%5, nx=h%12+1;
+  let t;
+  if(m===0)t=`分針指著 12，時針正好指著 ${h}，所以是 <b>${h} 時整</b>。`;
+  else{
+    t=`<b>先看短針（時針）</b>：在 ${h} 和 ${nx} 之間，還沒到 ${nx}，所以是 <b>${h} 時</b>多。<br><b>再看長針（分針）</b>：`;
+    if(r===0)t+=`指著數字 ${k}，${k} × 5 = <b>${m} 分</b>。`;
+    else if(k===0)t+=`過了 12 再走 ${r} 小格，就是 <b>${m} 分</b>。`;
+    else t+=`過了數字 ${k} 再走 ${r} 小格，${k} × 5 + ${r} = <b>${m} 分</b>。`;
+  }
+  $('readHint').innerHTML=t;
+}
+function svgPoint(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function dragTo(e){
+  const q=svgPoint(c1.svg,e);let d=Math.atan2(q.x-150,-(q.y-150))*180/Math.PI;if(d<0)d+=360;
+  const m=Math.round(d/6)%60;let delta=m-total%60;if(delta>30)delta-=60;if(delta<-30)delta+=60;
+  total=((total+delta)%720+720)%720;render1();
+}
+c1.svg.addEventListener('pointerdown',e=>{if(quiz)return;drag=true;c1.svg.setPointerCapture(e.pointerId);dragTo(e)});
+c1.svg.addEventListener('pointermove',e=>{if(drag)dragTo(e)});
+['pointerup','pointercancel'].forEach(ev=>c1.svg.addEventListener(ev,()=>drag=false));
+document.querySelectorAll('.adj').forEach(b=>b.onclick=()=>{total=((total+ +b.dataset.m)%720+720)%720;render1()});
+$('showMin').onchange=e=>c1.outer.setAttribute('visibility',e.target.checked?'visible':'hidden');
+function setQuiz(v){quiz=v;document.querySelectorAll('.adj').forEach(b=>b.disabled=v);render1()}
+$('qNew').onclick=()=>{
+  const h=rand(1,12), m=$('qType').value==='5'?rand(0,11)*5:rand(0,59);
+  ans={h,m};total=(h%12)*60+m;
+  $('qBox').classList.remove('hidden');$('qH').value='';$('qM').value='';$('qRes').textContent='';setQuiz(true);
+};
+$('qCheck').onclick=()=>{
+  if(!ans)return;const h=+$('qH').value, m=+$('qM').value;
+  if($('qH').value!==''&&$('qM').value!==''&&h===ans.h&&m===ans.m){$('qRes').innerHTML='<span class="ok">答對了！🎉</span>';setQuiz(false);ans=null}
+  else{
+    let tip=[];if(h!==ans.h)tip.push('「時」不對：看短針剛走過哪個數字');if(m!==ans.m)tip.push('「分」不對：長針每走一個數字是 5 分');
+    $('qRes').innerHTML='<span class="no">再想想！</span> '+tip.join('；');
+  }
+};
+$('qShow').onclick=()=>{if(!ans)return;$('qRes').innerHTML=`答案是 <b>${ans.h} 時 ${ans.m} 分</b>`;setQuiz(false);ans=null};
+render1();
+
+/* ---------- ② 旋轉角度示範 ---------- */
+const c2=makeClock($('c2'));
+for(let n=1;n<=12;n++)$('d_start').add(new Option(n,n));
+$('d_start').value='12';
+function readDemo(){
+  const cl=v=>Math.max(0,Math.min(60,Math.floor(+v||0)));
+  const hk=$('d_hand').value;
+  return{hk,hand:hk==='h'?c2.hour:c2.minute,hn:hk==='h'?'時針':'分針',u:+$('d_unit').value,s:+$('d_start').value,N:cl($('d_cw').value),M:cl($('d_ccw').value)};
+}
+function updDemo(){
+  const d=readDemo();
+  c2.hour.show(d.hk==='h');c2.minute.show(d.hk==='m');
+  resetClock(c2,d.hand,d.s*30);$('live2').innerHTML='';
+  $('d_text').innerHTML=probText(d.hn,d.s,d.N,d.M,d.u)+'<br>1. 總共移動了幾度？　2. 起始位置與最後位置的夾角是幾度？';
+  $('d_steps').innerHTML=stepsHTML(d.N,d.M,d.u,solve(d.N,d.M,d.u,d.s));
+  $('d_steps').classList.add('hidden');$('d_ans').textContent='顯示答案';
+}
+['d_hand','d_unit','d_start','d_cw','d_ccw'].forEach(id=>$(id).addEventListener('input',updDemo));
+$('d_reset').onclick=updDemo;
+$('d_ans').onclick=()=>{const h=$('d_steps').classList.toggle('hidden');$('d_ans').textContent=h?'顯示答案':'隱藏答案'};
+$('d_play').onclick=()=>{
+  const d=readDemo();
+  rotate(c2,d.hand,d.s*30,[{dir:1,span:d.N*d.u,r:88,k:'cw'},{dir:-1,span:d.M*d.u,r:72,k:'ccw'}],
+    (m,k)=>$('live2').innerHTML=liveTxt(m,k),
+    ()=>$('live2').innerHTML=`完成！總共移動 ${(d.N+d.M)*d.u} 度`);
+};
+updDemo();
+
+/* ---------- ③ 練習題 ---------- */
+const c3=makeClock($('c3'));
+let P=null, right=0, done=0;
+function newProb(){
+  const lv=+$('lv').value;let N,M,u=30,hk='h';
+  if(lv===1){N=rand(2,9);M=rand(Math.max(1,N-6),N-1)}
+  else if(lv===2){N=rand(1,11);M=rand(1,11)}
+  else{u=6;hk='m';N=rand(5,45);M=rand(1,40)}
+  const s=rand(1,12);
+  P={N,M,u,s,hk,hand:hk==='h'?c3.hour:c3.minute,hn:hk==='h'?'時針':'分針',counted:false,solved:false};
+  P.o=solve(N,M,u,s);
+  c3.hour.show(hk==='h');c3.minute.show(hk==='m');resetClock(c3,P.hand,s*30);
+  $('pText').innerHTML=probText(P.hn,s,N,M,u);
+  $('q3').classList.toggle('hidden',u!==30);
+  ['a1','a2','a3'].forEach(i=>$(i).value='');['r1','r2','r3'].forEach(i=>$(i).innerHTML='');
+  $('pSteps').innerHTML=stepsHTML(N,M,u,P.o);$('pSteps').classList.add('hidden');$('live3').innerHTML='';
+}
+function chk(inp,res,val){
+  const ok=$(inp).value!==''&&+$(inp).value===val;
+  $(res).innerHTML=ok?'<span class="ok">✔ 正確</span>':'<span class="no">✘ 再想想</span>';return ok;
+}
+$('pCheck').onclick=()=>{
+  let ok=chk('a1','r1',P.o.total)&chk('a2','r2',P.o.ang);
+  if(P.u===30)ok=ok&chk('a3','r3',P.o.endNum);
+  if(!P.counted){P.counted=true;done++}
+  if(ok&&!P.solved){P.solved=true;right++}
+  $('score').textContent=`答對 ${right} 題／共 ${done} 題`;
+};
+$('pPlay').onclick=()=>rotate(c3,P.hand,P.s*30,[{dir:1,span:P.N*P.u,r:88,k:'cw'},{dir:-1,span:P.M*P.u,r:72,k:'ccw'}],
+  (m,k)=>$('live3').innerHTML=liveTxt(m,k),()=>$('live3').innerHTML='看看起點和終點的位置吧！');
+$('pSol').onclick=()=>$('pSteps').classList.toggle('hidden');
+$('pNew').onclick=newProb;$('lv').onchange=newProb;
+newProb();
+</script>
+</body>
+</html>
